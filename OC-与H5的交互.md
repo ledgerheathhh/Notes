@@ -217,6 +217,7 @@ WebViewJavaScriptBridge的设计很巧妙，他在JS端和Native端，都各自�
 
 在 JS 中调用这个函数并传递参数数据
 
+
 ```objectivec
 window.webkit.messageHandlers.jsFunc.postMessage({name : "李四",age : 22});
 ```
