@@ -101,9 +101,7 @@
 
 WebViewJavaScriptBridge的设计很巧妙，他在JS端和Native端，都各自初始化了一个WebViewJavaScriptBridge对象，就像是两边各自安排了一个”通讯兵“，让这两个对象去完成消息的收发工作。同时两边还各自维护一个管理相应事件的messageHandlers容器、一个管理回调的callbackId容器。所以这里的初始化，我们得分为两个部分的初始化，一个部分是Native端的初始化，一个是JS端的初始化.
 
-### H5 to Native
-
-* 首先初始化 `WebViewJavaScriptBridge`并且设置好代理
+ 首先初始化 `WebViewJavaScriptBridge`并且设置好代理
 
 ```objectivec
 #import "ViewController.h"
