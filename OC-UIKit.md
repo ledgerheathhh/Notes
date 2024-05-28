@@ -372,3 +372,323 @@ UITextField可以用于获取用户的文字输入，因此，通过其中的tex
 ```
 
 我们对输入框输入的内容长度限制为3，当我们输入的内容长度超过3时，就不再允许我们输入了。
+
+## UILable
+
+> UILabel是iOS开发中最经常使用的基础控件之一，它可以用来显示静态的单行或多行文本，不可编辑。UILabel继承自UIView，因此UIView中的所有方法和属性UILabel都具备。除此之外，UILabel还具备一些其特殊的方法和属性，主要是针对显示文本的样式和内容，在实际开发过程中需要掌握。
+
+### 常用属性介绍
+
+* 设置标签显示文本。
+
+```objectivec
+@property(nullable, nonatomic,copy) NSString  *text; 
+```
+
+* 设置文本字体和字体大小（系统字体默认大小为17）。
+
+```objectivec
+@property(null_resettable, nonatomic,strong) UIFont *font; 
+```
+
+* 设置文本颜色。
+
+```objectivec
+@property(null_resettable, nonatomic,strong) UIColor *textColor; 
+```
+
+* 设置文本背景颜色。
+
+```objectivec
+@property(nullable, nonatomic,copy) UIColor *backgroundColor;
+```
+
+* 设置文本对齐方式，默认居左(NSTextAlignmentLeft)，除此之外，还可以选择居中(NSTextAlignmentCenter)、居右(NSTextAlignmentRight)。
+
+```objectivec
+@property(nonatomic) NSTextAlignment textAlignment;
+```
+
+* 设置超出label边界文字的截取方式。(默认省略结尾)。
+
+```objectivec
+@property(nonatomic)  NSLineBreakMode    lineBreakMode;
+```
+
+* 设置文本是否可高亮。
+
+```objectivec
+@property(nonatomic,getter=isHighlighted) BOOL  highlighted; 
+```
+
+* 设置用于渲染文本的最大行数。
+
+```objectivec
+@property(nonatomic) NSInteger numberOfLines;
+```
+
+## UIButton
+
+一个UIButton按钮由三个属性组成：
+
+* 图标currentImage：图片左侧的图片，默认在左边，在显示的时候，会显示图片的实际大小；
+
+```objectivec
+@property(nullable, nonatomic,readonly,strong) UIImage  *currentImage; 
+```
+
+* 标题currentTitle：按钮上显示的文字，默认在右边；
+
+```objectivec
+@property(nullable, nonatomic,readonly,strong) NSString *currentTitle;
+```
+
+* 背景图片currentBackgroundImage：背景图片，默认占满整个按钮，在实际开发中，普遍需要对美工提供的背景图片拉伸显示，为了实现拉伸效果，可以直接修改图片的Slicing属性，修改方法可以前面章节中的介绍。
+
+```objectivec
+@property(nullable, nonatomic,readonly,strong) UIImage  *currentBackgroundImage;
+```
+
+### UIButton的状态
+
+当点击按钮时，按钮的image以及title是可以改变的，这是因为UIButton可以设置几种状态，针对每个状态可以定制不同的样式。UIButton按钮有5个状态：
+
+* UIControlStateNormal：默认状态；
+* UIControlStateHighlighted：高亮状态；
+* UIControlStateDisabled：失效状态；
+* UIControlStateSelected：选中状态
+* UIControlStateFocused：聚焦状态
+
+对于每个状态，都可以设置不同的图标、标题以及背景图片，使用如下方法：
+
+```objectivec
+- (void)setTitle:(nullable NSString *)title forState:(UIControlState)state; 
+- (void)setImage:(nullable UIImage *)image forState:(UIControlState)state;
+- (void)setBackgroundImage:(nullable UIImage *)image forState:(UIControlState)state；
+```
+
+另外，也有几个常用属性的设置不需要区分状态，如：
+
+```objectivec
+@property(nullable, nonatomic,copy) UIColor *backgroundColor;
+@property(null_resettable, nonatomic,strong) UIFont *font;
+```
+
+### UIButton点击动作的实现方法
+
+按钮的作用就是用来监控用户的点击，为了能够实现点击按钮后去完成特定的业务逻辑，可以使用如下两种方法来监控按钮的点击：
+
+* 使用Target-Action方法监听用户点击事件UIControlEventTouchUpInside。如下所示，当用户点击按钮时，会调用myAction:方法中实现的业务逻辑。
+
+```objectivec
+[self.myButton addTarget:self action:@selector(myAction:) forControlEvents:UIControlEventTouchUpInside];
+```
+
+## UIImageView
+
+> UIImageView是用来显示图片的UI控件，在使用过程中需要重点区分UIImageView以及UIImage的区别，另外，还需要重点掌握UIImageView的创建以及相关样式设置的操作方法。
+
+### UIImageView与UIImage的区别
+
+UIImageView与UIImage对于初学者来讲比较容易混淆，因此在学习UIImageView之前，首先需要了解UIImageView与UIImage的联系和区别。
+
+* UIImageView是UI控件，继承自UIView，是用来显示图片的控件，UIImageView中有一个UIImage类型的属性：image，用来存放需要显示的图片；
+* UIImage：可以理解为是图片文件，文件是不能显示的，文件相当于保存在磁盘上的一堆二进制编码。UIImage的父类是NSObject。创建UIImage对象可以使用imageNamed:以及imageWithContentsOfFile:方法，区别在于需要传入的图片文件的路径不同。
+
+```objectivec
++ (nullable UIImage *)imageNamed:(NSString *)name;      //从Assets文件夹中加载图片
++ (nullable UIImage *)imageWithContentsOfFile:(NSString *)path; //从应用的资源文件夹中加载图片
+```
+
+### UIImageView对象的创建
+
+```objectivec
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    //初始化UIImageView对象
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(80, 50, 200, 200)];
+    imageView.image = [UIImage imageNamed:@"imagename"];
+    //添加到控制器view
+    [self.view addSubview:imageView];
+}
+```
+
+### 设置圆角/圆形头像
+
+默认情况下，UIImageView是一个矩形，其边角是没有圆滑过渡的，在实际的开发过程中，我们经常需要把图片的边角设置为圆角，此时可以通过修改UIImageView的layer属性实现。
+
+```objectivec
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    //初始化UIImageView对象
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(80, 50, 200, 200)];
+    imageView.image = [UIImage imageNamed:@"99logo"];
+    //设置圆角
+    imageView.layer.cornerRadius = 5;
+    imageView.layer.masksToBounds = YES;
+    //添加到控制器view
+    [self.view addSubview:imageView];
+}
+```
+
+通过上面的方法，当我们设置cornerRadius的值为UIImageView宽度的一半时，最终展示的就是一个圆形的图片
+
+### 设置边框
+
+UIImageView对象创建后，默认情况下是没有边框的，我们可以通过修改layer的borderWidth以及borderColor来设置UIImageView的边框属性。
+
+```objectivec
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    //初始化UIImageView对象
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(80, 50, 200, 200)];
+    imageView.image = [UIImage imageNamed:@"99logo"];
+    //设置边框
+    imageView.layer.borderWidth = 5;
+    imageView.layer.borderColor = [UIColor redColor].CGColor;
+    //添加到控制器view
+    [self.view addSubview:imageView];
+}
+```
+
+### 添加手势点击事件
+
+默认情况下，UIImageView对象是不能够响应用户交互的，这是因为在UIImageView类中其userInteractionEnabled属性的默认取值为NO。我们可以修改该属性的值，并且为该UIImageView对象添加手势后，即可响应用户交互。
+
+```objectivec
+@property (nonatomic, getter=isUserInteractionEnabled) BOOL userInteractionEnabled;
+```
+
+下方的示例代码中为imageView对象添加了一个点击手势。
+
+```objectivec
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    //初始化UIImageView对象
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(80, 50, 200, 200)];
+    imageView.image = [UIImage imageNamed:@"99logo"];
+    //添加手势
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+    [imageView addGestureRecognizer:tap];
+    imageView.userInteractionEnabled = YES;
+    //添加到控制器view
+    [self.view addSubview:imageView];
+}
+```
+
+# 高级控件
+
+## UIScrollView
+
+> 由于移动设备的屏幕大小有限，所以不能像PC一样显示很多内容，因此，必须通过手指滚动来查看更多的内容。UIScrollView是一个能够在上下左右四个方向滚动的控件，我们常见的UITableView，UICollectionView也是继承自UIScrollView。
+
+### UIScrollView简介
+
+UIScrollView也是UIView的子类，因此也具有UIView的所有属性和方法，例如，可以设置UIScrollView的背景颜色，并且可以在UIScrollView对象上添加子视图。
+
+UIScrollView用于显示超出屏幕大小的内容，一般需要配合其他控件来使用，如添加一个UIImageView子控件，可以用来显示更大的图片。UITableView、UICollectionView以及UITextView这些可以滑动显示更多内容的控件都是UIScrollView的子类。例如，在实际应用开发中，常见的图片轮播期就是使用UIScrollView来实现的。
+
+### UIScrollView的常用属性
+
+UIScrollView继承自UIView, 所以UIView拥有的属性UIScrollView都有,此外它还有一些自己的特定属性。
+
+UIScrollView在使用过程中有如下3个核心属性：
+
+* **contentSize** ：表示UIScrollView内容的尺寸（即可滚动区域），一般会大于屏幕大小；
+
+```objectivec
+@property(nonatomic) CGSize contentSize;  // 默认大小为0
+```
+
+* **contentOffset** ： 当前屏幕显示区域的原点（即左上角原点），在UIScrollView的位置；
+
+```objectivec
+@property(nonatomic) CGPoint contentOffset;  // 默认从原点开始
+```
+
+* **contentInset** ： 可以在UIScrollView内容的四周增加额外的滚动区域（设置的值为：上、左、下、右）。
+
+```objectivec
+@property(nonatomic) UIEdgeInsets contentInset;  //默认为0
+```
+
+除此之外，UIScrollView还有如下几个常用的属性。
+
+* **bounces** ：当UIScrollView滚动到边界时，再继续滚动会有个反弹的效果（通常设置为YES）。注意：如果不设置contentSize，bounces的效果是显现不出来的，除非将alwaysBounceVertical和alwaysBounceHorizontal属性设置为YES；
+* **showsHorizontalScrollIndicator** ： 显示水平指示器 （YES为显示）；
+* **showsVerticalScrollIndicator** ：显示垂直指示器；
+* **pagingEnabled** ：分页效果（是否整页翻动）；
+* **scrollEnabled** ：UIScrollView是否可以滚动；
+
+```objectivec
+@property(nonatomic) BOOL bounces; //默认为YES
+@property(nonatomic) BOOL showsHorizontalScrollIndicator; //默认为YES
+@property(nonatomic) BOOL showsVerticalScrollIndicator;//默认为YES
+@property(nonatomic,getter=isPagingEnabled) BOOL pagingEnabled ; //默认为NO
+@property(nonatomic,getter=isScrollEnabled) BOOL scrollEnabled; 默认为YES
+```
+
+## UITableView
+
+> 表视图UITableView是iOS开发中最重要的控件（不是之一），99.99%的App都会用到表视图。它之所以使用广泛，也是因为其强大的定制能力，当然学习起来也需要花费一些时间和精力。表视图主要用于呈现一个滚动的选择列表，在使用过程中主要有三个步骤：初始化、数据源的设置以及委托代理方法的实现。
+
+在实际开发中，我们会看到许多地方都用到了UITableView，如苹果系统中的设置、QQ、微信等。在UITableView中数据只有行的概念，并没有列的概念，因为在手机中显示多列是不利于操作的。
+
+#### UITableView样式
+
+UITableView有两种样式：平铺(UITableViewStylePlain)和分组(UITableViewStyleGrouped)。这两者本质区别不大，在没有特别设置的情况下，UITableViewStyleGrouped样式会默认留出header和footer的位置
+
+#### UITableView的属性
+
+UITableView类中定义了非常多的属性和方法，也正因为如此，UITableView的功能非常强大。
+
+* 获取表视图的样式
+
+```objectivec
+@property (nonatomic, readonly) UITableViewStyle style;
+```
+
+* UITableView的数据源对象与代理对象，需要遵守UITableViewDataSource协议与UITableViewDelegate协议
+
+```objectivec
+@property (nonatomic, weak, nullable) id <UITableViewDataSource> dataSource;
+@property (nonatomic, weak, nullable) id <UITableViewDelegate> delegate;
+```
+
+* 单元格的行高
+
+```objectivec
+@property (nonatomic) CGFloat rowHeight;
+```
+
+* 段section的header高度与footer高度
+
+```objectivec
+@property (nonatomic) CGFloat sectionHeaderHeight;
+@property (nonatomic) CGFloat sectionFooterHeight;
+```
+
+* 整体表视图的顶部视图与底部视图
+
+```objectivec
+@property (nonatomic, strong, nullable) UIView *tableHeaderView;
+@property (nonatomic, strong, nullable) UIView *tableFooterView;
+```
+
+* 表索引的样式设置
+
+```objectivec
+//索引表的字母的颜色
+@property (nonatomic, strong, nullable) UIColor *sectionIndexColor;
+//索引栏的背景颜色
+@property (nonatomic, strong, nullable) UIColor *sectionIndexBackgroundColor; 
+```
+
+* 分割线的样式设置
+
+```objectivec
+//设置分割线样式
+@property (nonatomic) UITableViewCellSeparatorStyle separatorStyle;
+//定义分割线颜色
+@property (nonatomic, strong, nullable) UIColor *separatorColor;
+```
