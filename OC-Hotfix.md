@@ -77,7 +77,7 @@ JSPatch 支持调用 stringWithFormat，不过所有参数类型都需改为 `%@
 NSString.stringWithFormat("name:%@, age:%@", "alex", 12);
 ```
 
-## 字符串 / 数组 / 字典 操作问题
+### 字符串 / 数组 / 字典 操作问题
 
 刚使用 JSPatch 经常会对 NSString / NSArray / NSDictionary / NSDate 这四个类的使用感到迷惑，因为 JS 语言本身有对应的这四个类型，会跟 OC 的这四个类混淆。要避免混淆，要弄清楚两点：
 
@@ -157,8 +157,6 @@ var v = ocInfo['k'];
 var transDict = ocInfo.toJS();
 var v = transDict['k'];
 ```
-
-
 
 ### JS断点调试
 
