@@ -228,7 +228,113 @@ Accessory View是显示在单元格最右边的图标，主要可以用来显示
 @property (nonatomic, strong, nullable) UIView *accessoryView; 
 ```
 
-### UITableView 和 UICollectionView 的重用机制
+## UICollectionView
+
+> UICollectionView，即集合视图，是在iOS6中推出的，它和UITableView共享API设计，但它在UITableView上做了一些扩展。UICollectionView独特的强大之处就是其完全灵活的布局结构，它可以提供网状排列的UI控件。在使用集合视图时，需要提供两个核心的元素，第一：集合视图需要显示的数据，第二，集合视图的布局方式，数据和布局完全分离，并且又一起协同工作。
+
+集合视图可以看做是表视图UITableView的增强版，在苹果官方推出集合视图之前，就已经有开发者提供了类似的控件。集合视图与表视图相比，其实现原理、使用方法上有众多相似的地方，一旦掌握了表视图的相关知识，再去学习和了解集合视图是非常简单的。在iOS中，要实现九宫数据展示，最常用的做法就是使用UICollectionView。UICollectionView继承自UIScrollView，因此支持水平和垂直滚动，且性能极佳。
+
+集合视图由三部分组成：
+
+* Cell：单元格
+* Supplementary View：补充视图，指的是Header与Footer，每个段Section都可以设置不同的补充视图；
+* Decoration View：装饰视图，一般是用于背景。
+
+#### 集合视图的布局
+
+与表视图相比，集合视图引入了布局的概念，集合视图上的单元格布局方式是可以通过定制实现的，表视图中所有的单元格都是自上而下依次排列的，而集合视图中可以灵活定制单元格的布局方式，例如，我们常见的瀑布式布局就需要使用集合视图实现，单元格的布局设置是集合视图的重要特点。集合视图中布局方式由其UICollectionViewLayout属性决定，系统提供了提供了两种布局方式：
+
+* UICollectionViewFlowLayout：Flow Layout是一个单元格的线性布局方案，并具有页面和页脚。这是一种比较常用的布局方式，实现简单，即单元格依次排列。
+* 自定义布局方式。这种布局方式具有很大的灵活性，但需要开发者创建一个UICollectionViewLayout类型的对象，并针对布局编写相关的代码。
+
+#### 集合视图的常见属性
+
+集合视图继承自UIScrollView，因此其具有其父类的所有属性和方法。除此之外，集合视图还具有如下几个特殊的属性。
+
+* 布局对象，用于实现单元格的自定义布局。
+
+```objectivec
+@property (nonatomic, strong) UICollectionViewLayout *collectionViewLayout;
+```
+
+* 集合视图的初始化方法，需要传递一个UICollectionViewLayout类型的布局对象
+
+```objectivec
+- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout;
+```
+
+* 背景视图,会自动填充整个UICollectionView
+
+```objectivec
+@property (nonatomic, strong) UIView *backgroundView;
+```
+
+* 是否允许选中cell，默认允许选中
+
+```objectivec
+@property (nonatomic) BOOL allowsSelection;
+```
+
+* 是否可以多选，默认只是单选
+
+```objectivec
+@property (nonatomic) BOOL allowsMultipleSelection;
+```
+
+#### 常用数据源方法
+
+集合视图的数据源协议为UICollectionViewDataSource，其中定义了用于为集合视图中的单元格提供数据的相关方法。其中，如下两个方法是必须实现的方法。
+
+* 返回单元格个数
+
+```objectivec
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section;
+```
+
+* 根据indexPath属性，返回该单元格的具体样式和显示内容
+
+```objectivec
+- (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath;
+```
+
+另外，与表视图的数据源协议类似，我们还可以设置集合视图中包含的段Section数量。
+
+* 返回段Section个数，默认为1
+
+```objectivec
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView;
+```
+
+* 设置头尾视图，同样也要先注册
+
+```objectivec
+- (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath;
+```
+
+* 设置单元格是否可以移动
+
+```objectivec
+- (BOOL)collectionView:(UICollectionView *)collectionView canMoveItemAtIndexPath:(NSIndexPath *)indexPath NS_AVAILABLE_IOS(9_0);
+```
+
+* 获取被移动单元格的原始位置与最新位置，移动单元格后调用，此方法用于更新数据源中的数据。
+
+```objectivec
+- (void)collectionView:(UICollectionView *)collectionView moveItemAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath*)destinationIndexPath NS_AVAILABLE_IOS(9_0);
+```
+
+#### 注册单元格
+
+在集合视图中的单元格必须在创建集合视图时进行注册，单元格有两种注册方式，分别对应通过代码创建的单元格以及通过xib创建的单元格。
+
+* 通过代码创建出的单元格的注册方法
+
+```objectivec
+- (void)registerClass:(nullable Class)cellClass forCellWithReuseIdentifier:(NSString *)identifier;
+```
+
+
+## UITableView 和 UICollectionView 的重用机制
 
 #### 1. 目的
 
@@ -263,15 +369,17 @@ Accessory View是显示在单元格最右边的图标，主要可以用来显示
 ##### 在 UICollectionView 中
 
 ```objectivec
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.view addSubview:self.collectionView];
+    UICollectionViewFlowLayout *flowLayout = [[UICollectionViewFlowLayout alloc]init];
+    _collectionView = [[UICollectionView alloc]initWithFrame:self.view.bounds collectionViewLayout:flowLayout];
+    _collectionView.dataSource = self;
+    [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cell"];
+}
+
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellID" forIndexPath:indexPath];
-    UILabel *label = (UILabel *)[cell viewWithTag:100];
-    if (label == nil) {
-        label = [[UILabel alloc] initWithFrame:cell.contentView.bounds];
-        label.tag = 100;
-        [cell.contentView addSubview:label];
-    }
-    label.text = [NSString stringWithFormat:@"Item %ld", (long)indexPath.item];
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
     return cell;
 }
 ```
