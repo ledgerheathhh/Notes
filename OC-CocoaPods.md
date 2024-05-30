@@ -1,3 +1,34 @@
+## CocoaPods
+
+> CocoaPods是iOS开发中最常使用的第三方开源库管理工具。如果不使用CocoaPods，我们在iOS开发过程中使用的第三方库需要手工进行安装以及更新，并且需要手工来设置各个第三方库所需的系统依赖。在我们有了CocoaPods这个工具之后，只需要将用到的第三方开源库放到一个名为Podfile的文件中，然后在命令行执行安装命令，CocoaPods就会自动将这些第三方开源库的源码下载下来，并且为我们的工程设置好相应的系统依赖和编译参数。
+
+### CocoaPods的安装
+
+安装homebrew后执行
+
+```bash
+brew install cocoapods
+```
+
+### 使用CocoaPods安装SDK
+
+使用 `pod init`初始化，生成Podfile如下所示：
+
+```ruby
+# Uncomment the next line to define a global platform for your project
+ platform :ios, '13.0'
+
+target 'JSPatchTest' do
+  # Comment the next line if you don't want to use dynamic frameworks
+#  use_frameworks!
+
+  # Pods for JSPatchTest
+  pod 'JSPatchPlatform'
+end
+```
+
+执行 `pod install`安装库
+
 **静态库，动态库，Framework的区别**
 
 所谓的库就是一段编译好的二进制文件，加上头文件，相关的资源文件就可供别人使用
