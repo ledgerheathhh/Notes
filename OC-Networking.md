@@ -234,3 +234,30 @@ AFNetworking对复杂的网络请求进行了封装，大大降低了有关网�
 # YTKNetwork
 
 YTKNetwork 是猿题库技术团队开源的一个网络请求框架，内部封装了 AFNetworking。YTKNetwork 实现了一套高层级的 API，提供更高层次的网络访问抽象。
+
+## YTKNetwork 架构
+
+YTKNetwork 开源框架主要包含 3 个部分：
+
+* YTKNetwork 核心功能
+* YTKNetwork 链式请求
+* YTKNetwork 批量请求
+
+其中，链式请求和批量请求都是基于 YTKNetwork 的核心功能实现的。
+
+### YTKNetwork 核心功能
+
+YTKNetwork 核心功能的基本思想是：
+
+* **把每一个网络请求封装成一个对象，每个请求对象继承自 `YTKBaseRequest` 类** 。
+* **使用 `YTKNetworkAgent` 单例对象持有一个 `AFHTTPSessionManager` 对象来管理所有请求对象** 。
+
+YTKNetwork 核心功能主要涉及到 3 个类：
+
+* `YTKBaseRequest`
+* `YTKNetworkConfig`
+* `YTKNetworkAgent`
+
+#### YTKBaseRequest
+
+`YTKBaseRequest` 类用于表示一个请求对象，它提供了一系列属性来充分表示一个网络请求。
