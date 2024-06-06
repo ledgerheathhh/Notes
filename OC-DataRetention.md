@@ -28,7 +28,9 @@
 defaults write com.apple.finder AppleShowAllFiles -bool true
 ```
 
-# 偏好设置 (NSUserDefaults)
+在应用程序中，使用 **NSHomeDirectory()** 函数，获取App的沙盒路径
+
+# NSUserDefaults
 
 > 偏好设置在iOS开发中的使用是比较普遍的，主要原因在于其简单易用。偏好设置本质上就是一个Plist文件，不过该Plist文件是由系统自动创建的，并且在Foundation框架中提供了一些专用的访问方法。
 
@@ -132,7 +134,7 @@ NSString *userName = [defaults valueForKey:@"UserName"];
 NSLog(@"%@--%d--%@", lastLoginTime, isFirstLogin, userName);
 ```
 
-# 删除数据
+## 删除数据
 
 当我们需要删除偏好设置中的内容时，也是根据其标识键值进行删除的。
 
@@ -164,7 +166,6 @@ SQLite 提供了许多函数和接口，用于进行数据库的操作和管理�
 * `sqlite3_bind_xxx()`：将参数的值绑定到 `sqlite3_stmt` 对象中。
 * `sqlite3_column_xxx()`：从查询结果中获取列数据。
 * `sqlite3_exec()`：执行一个 SQL 语句，并使用回调函数来处理查询结果或者执行结果。
-
 
 ### SQLite 的数据库文件
 
@@ -269,3 +270,250 @@ SQLite 不仅提供了基本的数据库操作和管理功能，还提供了许�
 ### 小结
 
 SQLite 是一个非常有用的嵌入式数据库，可以在 iOS 中进行数据的存储和管理。使用 SQLite 的基本步骤包括：打开数据库、准备 SQL 语句、绑定参数、执行 SQL 语句、处理查询结果、清理资源。SQLite 提供了许多常用的函数和接口，可以帮助我们更好地使用和管理数据库。SQLite 数据库文件是一种特殊的二进制文件，需要放置在沙盒的可访问目录中。SQLite 还提供了许多高级的特性，可以满足更复杂的数据库操作和管理需求。
+
+# MMKV
+
+MMKV 是基于 mmap 内存映射的 key-value 组件，底层序列化/反序列化使用 protobuf 实现，性能高，稳定性强。
+
+### 安装引入
+
+* **通过 CocoaPods：**
+
+1. `pod repo update` 让 CocoaPods 感知最新的 MMKV 版本；
+2. 打开 Podfile, 添加 `pod 'MMKV'`到你的 App Target 里面；或 `pod 'MMKVAppExtension'` 到你的 AppExtension Target 里，或 `pod 'MMKVWatchExtension'` 到你的 WatchExtension Target 里；
+3. 在命令行输入 `pod install`；
+4. 添加头文件 `#import <MMKV/MMKV.h>`，相应地，如果是其他 Extension Target，头文件也要相应地变更为 `<MMKVAppExtension/MMKV.h>` 或 `<MMKVWatchExtension/MMKV.h>` 。
+
+## 使用
+
+MMKV 可以直接使用，所有变更立即生效，无需调用 `synchronize` 之类的函数。
+
+### 初始化
+
+* 在 App 启动时初始化 MMKV（设定 MMKV 的根目录），例如在 `-[MyApp application: didFinishLaunchingWithOptions:]`里：
+
+  ```objc
+  - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+      // init MMKV in the main thread
+      [MMKV initializeMMKV:nil];
+
+      //...
+      return YES;
+  }
+  ```
+* 如果你需要 **多进程访问** (在主 App 与 Extension 之间)，那么需要在初始化时设置 [**group directory**](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups?language=objc):
+
+  ```objc
+  NSString *myGroupID = @"group.company.mmkv";
+  // the group dir that can be accessed by App & extensions
+  NSString *groupDir = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:myGroupID].path;
+  [MMKV initializeMMKV:nil groupDir:groupDir logLevel:MMKVLogInfo];
+  ```
+
+### CRUD 操作
+
+* MMKV 提供一个 **全局的实例** ，可以直接使用：
+  ```objc
+      // 初始化 MMKV
+      [MMKV initializeMMKV:nil];
+
+      // 获取默认的 MMKV 实例
+      MMKV *mmkv = [MMKV defaultMMKV];
+
+      // 存储数据
+      [mmkv setObject:@"Hello MMKV" forKey:@"myString"];
+      [mmkv setInt32:12345 forKey:@"myInt"];
+      [mmkv setBool:YES forKey:@"myBool"];
+
+      // 读取数据
+      NSString *myString = [mmkv getObjectOfClass:[NSString class] forKey:@"myString"];
+      int myInt = [mmkv getInt32ForKey:@"myInt"];
+      BOOL myBool = [mmkv getBoolForKey:@"myBool"];
+
+      NSLog(@"String: %@", myString);
+      NSLog(@"Int: %d", myInt);
+      NSLog(@"Bool: %d", myBool);
+
+      // 更新数据
+      [mmkv setObject:@"Updated MMKV" forKey:@"myString"];
+
+      myString = [mmkv getObjectOfClass:[NSString class] forKey:@"myString"];
+      NSLog(@"String: %@", myString);
+
+      // 删除数据
+      [mmkv removeValueForKey:@"myInt"];
+
+      myInt = [mmkv getInt32ForKey:@"myInt"];
+      NSLog(@"Int: %d", myInt);
+  ```
+
+```objc
+NSDictionary *dic = @{@"key1" : @"value1",
+                      @"key2" : @(2)};
+[mmkv setObject:dic forKey:@"dictionary"];
+dic = [mmkv getObjectOfClass:[NSDictionary class] forKey:@"dictionary"];
+NSLog(@"dictionary:%@", dic);
+
+```
+
+* **删除、枚举** ：
+
+```objc
+MMKV *mmkv = [MMKV defaultMMKV];
+
+[mmkv removeValueForKey:@"bool"];
+[mmkv removeValuesForKeys:@[@"int32", @"int64"]];
+
+BOOL hasBool = [mmkv containsKey:@"bool"];
+  
+[mmkv enumerateKeys:^(NSString *key, BOOL *stop) {
+    if ([key isEqualToString:@"string"]) {
+        NSString *value = [mmkv getStringForKey:key];
+        NSLog(@"%@ = %@", key, value);
+        *stop = YES;
+    }
+}];
+
+// delete everything
+[mmkv clearAll];
+```
+
+* 如果不同业务需要 **区别存储** ，也可以单独创建自己的实例：
+  ```objc
+  MMKV* mmkv = [MMKV mmkvWithID:@"MyID"];
+  [mmkv setBool:YES forKey:@"bool"];
+  ```
+* 如果你需要 **多进程访问** (在主 App 与 Extension 之间)，那么如前文所述需要在初始化时设置  **group directory** 。然后传入 `MMKVMultiProcess` 参数获取多进程实例:
+  ```objc
+  MMKV *mmkv = [MMKV mmkvWithID:@"MyMultiID" mode:MMKVMultiProcess];
+  [mmkv setBool:YES forKey:@"bool"];
+  ```
+
+### 支持的数据类型
+
+* 支持以下 C/C++ 语语言基础类型：
+  * `bool, int32, int64, uint32, uint64, float, double`
+* 支持以下 Objective-C 类型：
+  * `NSString, NSData, NSDate`
+* 支持实现了 `<NSCoding>`协议的任何类型。
+
+## MMKV 原理
+
+### 内存准备
+
+通过 mmap 内存映射文件，提供一段可供随时写入的内存块，App 只管往里面写数据，由操作系统负责将内存回写到文件，不必担心 crash 导致数据丢失。
+
+### 数据组织
+
+数据序列化方面我们选用 protobuf 协议，pb 在性能和空间占用上都有不错的表现。考虑到我们要提供的是通用 kv 组件，key 可以限定是 string 字符串类型，value 则多种多样（int/bool/double 等）。要做到通用的话，考虑将 value 通过 protobuf 协议序列化成统一的内存块（buffer），然后就可以将这些 KV 对象序列化到内存中。
+
+```objc
+message KV {
+	string key = 1;
+	buffer value = 2;
+}
+
+-(BOOL)setInt32:(int32_t)value forKey:(NSString*)key {
+	auto data = PBEncode(value);
+	return [self setData:data forKey:key];
+}
+
+-(BOOL)setData:(NSData*)data forKey:(NSString*)key {
+	auto kv = KV { key, data };
+	auto buf = PBEncode(kv);
+	return [self write:buf];
+}
+
+```
+
+### 写入优化
+
+标准 protobuf 不提供增量更新的能力，每次写入都必须全量写入。考虑到主要使用场景是频繁地进行写入更新，我们需要有增量更新的能力：将增量 kv 对象序列化后，直接 append 到内存末尾；这样同一个 key 会有新旧若干份数据，最新的数据在最后；那么只需在程序启动第一次打开 mmkv 时，不断用后读入的 value 替换之前的值，就可以保证数据是最新有效的。
+
+### 空间增长
+
+使用 append 实现增量更新带来了一个新的问题，就是不断 append 的话，文件大小会增长得不可控。例如同一个 key 不断更新的话，是可能耗尽几百 M 甚至上 G 空间，而事实上整个 kv 文件就这一个 key，不到 1k 空间就存得下。这明显是不可取的。我们需要在性能和空间上做个折中：以内存 pagesize 为单位申请空间，在空间用尽之前都是 append 模式；当 append 到文件末尾时，进行文件重整、key 排重，尝试序列化保存排重结果；排重后空间还是不够用的话，将文件扩大一倍，直到空间足够。
+
+```objc
+-(BOOL)append:(NSData*)data {
+	if (space >= data.length) {
+		append(fd, data);
+	} else {
+		newData = unique(m_allKV);
+		if (total_space >= newData.length) {
+			write(fd, newData);
+		} else {
+			while (total_space < newData.length) {
+				total_space *= 2;
+			}
+			ftruncate(fd, total_space);
+			write(fd, newData);
+		}
+	}
+}
+```
+
+### 数据有效性
+
+考虑到文件系统、操作系统都有一定的不稳定性，另外增加了 crc 校验，对无效数据进行甄别。
+
+### Android 多进程访问
+
+将 MMKV 迁移到 Android 平台之后，需要支持多进程访问（ iOS 不支持多进程）
+
+# SQLite vs MMKV
+
+#### 一、数据存储模型
+
+- **MMKV**：
+
+  - **数据模型**：键值对存储，类似 `SharedPreferences`（Android）或 `NSUserDefaults`（iOS）。
+  - **适用场景**：存储配置项、状态信息、小型数据集。
+- **SQLite**：
+
+  - **数据模型**：关系型数据库，使用表、行和列存储数据。
+  - **适用场景**：存储结构化数据、大型数据集、需要复杂查询的数据。
+
+#### 二、性能
+
+- **MMKV**：
+
+  - **优势**：使用内存映射文件技术，读写速度快，适合频繁读写小数据。
+  - **缺点**：不适合存储和处理非常大的数据集或复杂的数据结构。
+- **SQLite**：
+
+  - **优势**：处理大数据集和复杂查询时表现出色，支持索引和优化查询执行计划。
+  - **缺点**：频繁的单次读写操作性能可能不如MMKV。
+
+#### 三、数据操作
+
+- **MMKV**：
+
+  - **操作简便**：提供简单的键值对存储接口，易于使用。
+  - **线程安全**：内置线程安全机制，多线程环境下安全使用。
+- **SQLite**：
+
+  - **操作复杂**：需要编写SQL语句，适合需要复杂查询和数据操作的场景。
+  - **事务支持**：支持事务，确保数据操作的原子性和一致性。
+
+#### 四、数据持久化
+
+- **MMKV**：
+
+  - **数据持久化**：使用内存映射文件，数据持久化到文件系统，应用崩溃或重启后数据仍然存在。
+  - **同步机制**：操作系统自动管理内存和磁盘之间的同步，保证数据持久性。
+- **SQLite**：
+
+  - **数据持久化**：数据存储在磁盘文件中，支持持久化存储。
+  - **同步机制**：通过SQL事务和写入同步机制，确保数据一致性和持久性。
+
+#### 五、适用场景
+
+- **MMKV**：
+
+  - 适用于存储应用配置、用户设置、状态信息等小型数据。
+  - 适合需要快速读写小数据的场景，如应用启动配置加载。
+- **SQLite**：
+
+  - 适用于存储复杂结构化数据、需要复杂查询的数据。
+  - 适合数据量较大、关系复杂的场景，如应用数据存储、离线数据缓存。
