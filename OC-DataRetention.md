@@ -150,127 +150,6 @@ NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 [defaults removeObjectForKey:@"LastLoginTime"];
 ```
 
-# SQLite
-
-SQLite 是一个轻量级的、嵌入式的关系型数据库管理系统（RDBMS），它的核心是一个 C 语言库，可以在许多不同的平台和操作系统上使用。SQLite 使用一种简单的文件格式来存储数据库，因此可以方便地在不同的设备和应用程序之间进行交换和共享。
-
-### SQLite 的常用函数
-
-SQLite 提供了许多函数和接口，用于进行数据库的操作和管理。以下是一些常用的函数和接口：
-
-* `sqlite3_open()`：打开一个 SQLite 数据库文件，并返回一个 `sqlite3` 对象。
-* `sqlite3_close()`：关闭一个 `sqlite3` 对象，并释放数据库文件和其他资源。
-* `sqlite3_prepare_v2()`：将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象。
-* `sqlite3_step()`：逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
-* `sqlite3_finalize()`：释放 `sqlite3_stmt` 对象所占用的内存。
-* `sqlite3_bind_xxx()`：将参数的值绑定到 `sqlite3_stmt` 对象中。
-* `sqlite3_column_xxx()`：从查询结果中获取列数据。
-* `sqlite3_exec()`：执行一个 SQL 语句，并使用回调函数来处理查询结果或者执行结果。
-
-### SQLite 的数据库文件
-
-SQLite 数据库文件是一种特殊的二进制文件，用于存储数据库中的表、索引、数据等信息。SQLite 数据库文件的后缀名通常是 `.sqlite` 或者 `.db`，但是实际上并没有严格的限制，可以是任意的字符串。在 iOS 中，你需要将数据库文件放置在沙盒的可访问目录中，例如文档目录、缓存目录等，以便于应用程序具有读取和写入数据库文件的权限。
-
-### SQLite 的基本使用
-
-以下是 SQLite 的基本使用步骤：
-
-1. 打开数据库
-
-使用 `sqlite3_open()` 函数打开一个 SQLite 数据库。如果数据库文件不存在，`sqlite3_open()` 函数会自动创建一个新的数据库文件。
-
-```objc
-sqlite3 *db;
-int rc = sqlite3_open("test.db", &db);
-if (rc) {
-    NSLog(@"Can't open database: %s", sqlite3_errmsg(db));
-    return;
-}
-```
-
-2. 准备 SQL 语句
-
-使用 `sqlite3_prepare_v2()` 函数将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象，用于后续的执行和绑定。
-
-```objc
-const char *sql = "SELECT * FROM users WHERE age > ?";
-sqlite3_stmt *stmt;
-rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
-if (rc != SQLITE_OK) {
-    NSLog(@"Prepare statement failed: %s", sqlite3_errmsg(db));
-    sqlite3_close(db);
-    return;
-}
-```
-
-3. 绑定参数
-
-如果 SQL 语句中包含参数，可以使用 `sqlite3_bind_xxx()` 函数将参数的值绑定到 `sqlite3_stmt` 对象中，以便于在执行时使用。
-
-```objc
-sqlite3_bind_int(stmt, 1, 25);
-```
-
-4. 执行 SQL 语句
-
-使用 `sqlite3_step()` 函数逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
-
-```objc
-while (sqlite3_step(stmt) == SQLITE_ROW) {
-    int id = sqlite3_column_int(stmt, 0);
-    const char *name = (const char *)sqlite3_column_text(stmt, 1);
-    int age = sqlite3_column_int(stmt, 2);
-    NSLog(@"id: %d, name: %s, age: %d", id, name, age);
-}
-```
-
-5. 处理查询结果
-
-如果 SQL 语句是一个查询语句，可以使用 `sqlite3_column_xxx()` 函数从查询结果中获取列数据，并进行后续的处理和展示。
-
-```objc
-const char *name = (const char *)sqlite3_column_text(stmt, 1);
-```
-
-6. 清理资源
-
-使用 `sqlite3_finalize()` 函数释放 `sqlite3_stmt` 对象所占用的内存，并使用 `sqlite3_close()` 函数关闭 `sqlite3` 对象，以便于释放数据库文件和其他资源。
-
-```objc
-sqlite3_finalize(stmt);
-sqlite3_close(db);
-```
-
-除了以上的基本使用步骤，SQLite 还提供了一些其他的函数和接口，用于进行数据库的操作和管理。以下是一些常用的函数和接口：
-
-* `sqlite3_open()`：打开一个 SQLite 数据库文件，并返回一个 `sqlite3` 对象。
-* `sqlite3_close()`：关闭一个 `sqlite3` 对象，并释放数据库文件和其他资源。
-* `sqlite3_prepare_v2()`：将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象。
-* `sqlite3_step()`：逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
-* `sqlite3_finalize()`：释放 `sqlite3_stmt` 对象所占用的内存。
-* `sqlite3_bind_xxx()`：将参数的值绑定到 `sqlite3_stmt` 对象中。
-* `sqlite3_column_xxx()`：从查询结果中获取列数据。
-* `sqlite3_exec()`：执行一个 SQL 语句，并使用回调函数来处理查询结果或者执行结果。
-
-### SQLite 的数据库文件
-
-SQLite 数据库文件是一种特殊的二进制文件，用于存储数据库中的表、索引、数据等信息。SQLite 数据库文件的后缀名通常是 `.sqlite` 或者 `.db`，但是实际上并没有严格的限制，可以是任意的字符串。在 iOS 中，你需要将数据库文件放置在沙盒的可访问目录中，例如文档目录、缓存目录等，以便于应用程序具有读取和写入数据库文件的权限。
-
-### SQLite 的高级特性
-
-SQLite 不仅提供了基本的数据库操作和管理功能，还提供了许多高级的特性，例如：
-
-* 事务：SQLite 支持事务的机制，可以将多个 SQL 语句组合成一个事务，并且在事务中的 SQL 语句要么全部执行成功，要么全部执行失败。
-* 索引：SQLite 支持对表中的列创建索引，以提高查询的效率。
-* 触发器：SQLite 支持在表中创建触发器，在特定的条件下自动执行一些 SQL 语句。
-* 视图：SQLite 支持创建视图，将多个表中的数据进行关联和筛选，并且可以对视图进行查询和更新。
-* 全文检索：SQLite 支持对表中的文本数据进行全文检索，以提高查询的效率和准确性。
-* 加密：SQLite 支持对数据库文件进行加密，以保护数据的安全性。
-
-### 小结
-
-SQLite 是一个非常有用的嵌入式数据库，可以在 iOS 中进行数据的存储和管理。使用 SQLite 的基本步骤包括：打开数据库、准备 SQL 语句、绑定参数、执行 SQL 语句、处理查询结果、清理资源。SQLite 提供了许多常用的函数和接口，可以帮助我们更好地使用和管理数据库。SQLite 数据库文件是一种特殊的二进制文件，需要放置在沙盒的可访问目录中。SQLite 还提供了许多高级的特性，可以满足更复杂的数据库操作和管理需求。
-
 # MMKV
 
 MMKV 是基于 mmap 内存映射的 key-value 组件，底层序列化/反序列化使用 protobuf 实现，性能高，稳定性强。
@@ -461,59 +340,282 @@ message KV {
 
 将 MMKV 迁移到 Android 平台之后，需要支持多进程访问（ iOS 不支持多进程）
 
-# SQLite vs MMKV
+# SQLite
 
-#### 一、数据存储模型
+SQLite 是一个轻量级的、嵌入式的关系型数据库管理系统（RDBMS），它的核心是一个 C 语言库，可以在许多不同的平台和操作系统上使用。SQLite 使用一种简单的文件格式来存储数据库，因此可以方便地在不同的设备和应用程序之间进行交换和共享。
 
-- **MMKV**：
+### SQLite 的常用函数
 
-  - **数据模型**：键值对存储，类似 `SharedPreferences`（Android）或 `NSUserDefaults`（iOS）。
-  - **适用场景**：存储配置项、状态信息、小型数据集。
-- **SQLite**：
+SQLite 提供了许多函数和接口，用于进行数据库的操作和管理。以下是一些常用的函数和接口：
 
-  - **数据模型**：关系型数据库，使用表、行和列存储数据。
-  - **适用场景**：存储结构化数据、大型数据集、需要复杂查询的数据。
+* `sqlite3_open()`：打开一个 SQLite 数据库文件，并返回一个 `sqlite3` 对象。
+* `sqlite3_close()`：关闭一个 `sqlite3` 对象，并释放数据库文件和其他资源。
+* `sqlite3_prepare_v2()`：将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象。
+* `sqlite3_step()`：逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
+* `sqlite3_finalize()`：释放 `sqlite3_stmt` 对象所占用的内存。
+* `sqlite3_bind_xxx()`：将参数的值绑定到 `sqlite3_stmt` 对象中。
+* `sqlite3_column_xxx()`：从查询结果中获取列数据。
+* `sqlite3_exec()`：执行一个 SQL 语句，并使用回调函数来处理查询结果或者执行结果。
 
-#### 二、性能
+### SQLite 的数据库文件
 
-- **MMKV**：
+SQLite 数据库文件是一种特殊的二进制文件，用于存储数据库中的表、索引、数据等信息。SQLite 数据库文件的后缀名通常是 `.sqlite` 或者 `.db`，但是实际上并没有严格的限制，可以是任意的字符串。在 iOS 中，你需要将数据库文件放置在沙盒的可访问目录中，例如文档目录、缓存目录等，以便于应用程序具有读取和写入数据库文件的权限。
 
-  - **优势**：使用内存映射文件技术，读写速度快，适合频繁读写小数据。
-  - **缺点**：不适合存储和处理非常大的数据集或复杂的数据结构。
-- **SQLite**：
+### SQLite 的基本使用
 
-  - **优势**：处理大数据集和复杂查询时表现出色，支持索引和优化查询执行计划。
-  - **缺点**：频繁的单次读写操作性能可能不如MMKV。
+以下是 SQLite 的基本使用步骤：
 
-#### 三、数据操作
+1. 打开数据库
 
-- **MMKV**：
+使用 `sqlite3_open()` 函数打开一个 SQLite 数据库。如果数据库文件不存在，`sqlite3_open()` 函数会自动创建一个新的数据库文件。
 
-  - **操作简便**：提供简单的键值对存储接口，易于使用。
-  - **线程安全**：内置线程安全机制，多线程环境下安全使用。
-- **SQLite**：
+```objc
+sqlite3 *db;
+int rc = sqlite3_open("test.db", &db);
+if (rc) {
+    NSLog(@"Can't open database: %s", sqlite3_errmsg(db));
+    return;
+}
+```
 
-  - **操作复杂**：需要编写SQL语句，适合需要复杂查询和数据操作的场景。
-  - **事务支持**：支持事务，确保数据操作的原子性和一致性。
+2. 准备 SQL 语句
 
-#### 四、数据持久化
+使用 `sqlite3_prepare_v2()` 函数将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象，用于后续的执行和绑定。
 
-- **MMKV**：
+```objc
+const char *sql = "SELECT * FROM users WHERE age > ?";
+sqlite3_stmt *stmt;
+rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+if (rc != SQLITE_OK) {
+    NSLog(@"Prepare statement failed: %s", sqlite3_errmsg(db));
+    sqlite3_close(db);
+    return;
+}
+```
 
-  - **数据持久化**：使用内存映射文件，数据持久化到文件系统，应用崩溃或重启后数据仍然存在。
-  - **同步机制**：操作系统自动管理内存和磁盘之间的同步，保证数据持久性。
-- **SQLite**：
+3. 绑定参数
 
-  - **数据持久化**：数据存储在磁盘文件中，支持持久化存储。
-  - **同步机制**：通过SQL事务和写入同步机制，确保数据一致性和持久性。
+如果 SQL 语句中包含参数，可以使用 `sqlite3_bind_xxx()` 函数将参数的值绑定到 `sqlite3_stmt` 对象中，以便于在执行时使用。
 
-#### 五、适用场景
+```objc
+sqlite3_bind_int(stmt, 1, 25);
+```
 
-- **MMKV**：
+4. 执行 SQL 语句
 
-  - 适用于存储应用配置、用户设置、状态信息等小型数据。
-  - 适合需要快速读写小数据的场景，如应用启动配置加载。
-- **SQLite**：
+使用 `sqlite3_step()` 函数逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
 
-  - 适用于存储复杂结构化数据、需要复杂查询的数据。
-  - 适合数据量较大、关系复杂的场景，如应用数据存储、离线数据缓存。
+```objc
+while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int id = sqlite3_column_int(stmt, 0);
+    const char *name = (const char *)sqlite3_column_text(stmt, 1);
+    int age = sqlite3_column_int(stmt, 2);
+    NSLog(@"id: %d, name: %s, age: %d", id, name, age);
+}
+```
+
+5. 处理查询结果
+
+如果 SQL 语句是一个查询语句，可以使用 `sqlite3_column_xxx()` 函数从查询结果中获取列数据，并进行后续的处理和展示。
+
+```objc
+const char *name = (const char *)sqlite3_column_text(stmt, 1);
+```
+
+6. 清理资源
+
+使用 `sqlite3_finalize()` 函数释放 `sqlite3_stmt` 对象所占用的内存，并使用 `sqlite3_close()` 函数关闭 `sqlite3` 对象，以便于释放数据库文件和其他资源。
+
+```objc
+sqlite3_finalize(stmt);
+sqlite3_close(db);
+```
+
+除了以上的基本使用步骤，SQLite 还提供了一些其他的函数和接口，用于进行数据库的操作和管理。以下是一些常用的函数和接口：
+
+* `sqlite3_open()`：打开一个 SQLite 数据库文件，并返回一个 `sqlite3` 对象。
+* `sqlite3_close()`：关闭一个 `sqlite3` 对象，并释放数据库文件和其他资源。
+* `sqlite3_prepare_v2()`：将 SQL 语句编译成字节码，并返回一个 `sqlite3_stmt` 对象。
+* `sqlite3_step()`：逐步执行 `sqlite3_stmt` 对象中的 SQL 语句，并获取查询结果或者执行结果。
+* `sqlite3_finalize()`：释放 `sqlite3_stmt` 对象所占用的内存。
+* `sqlite3_bind_xxx()`：将参数的值绑定到 `sqlite3_stmt` 对象中。
+* `sqlite3_column_xxx()`：从查询结果中获取列数据。
+* `sqlite3_exec()`：执行一个 SQL 语句，并使用回调函数来处理查询结果或者执行结果。
+
+### SQLite 的数据库文件
+
+SQLite 数据库文件是一种特殊的二进制文件，用于存储数据库中的表、索引、数据等信息。SQLite 数据库文件的后缀名通常是 `.sqlite` 或者 `.db`，但是实际上并没有严格的限制，可以是任意的字符串。在 iOS 中，你需要将数据库文件放置在沙盒的可访问目录中，例如文档目录、缓存目录等，以便于应用程序具有读取和写入数据库文件的权限。
+
+### SQLite 的高级特性
+
+SQLite 不仅提供了基本的数据库操作和管理功能，还提供了许多高级的特性，例如：
+
+* 事务：SQLite 支持事务的机制，可以将多个 SQL 语句组合成一个事务，并且在事务中的 SQL 语句要么全部执行成功，要么全部执行失败。
+* 索引：SQLite 支持对表中的列创建索引，以提高查询的效率。
+* 触发器：SQLite 支持在表中创建触发器，在特定的条件下自动执行一些 SQL 语句。
+* 视图：SQLite 支持创建视图，将多个表中的数据进行关联和筛选，并且可以对视图进行查询和更新。
+* 全文检索：SQLite 支持对表中的文本数据进行全文检索，以提高查询的效率和准确性。
+* 加密：SQLite 支持对数据库文件进行加密，以保护数据的安全性。
+
+### 小结
+
+SQLite 是一个非常有用的嵌入式数据库，可以在 iOS 中进行数据的存储和管理。使用 SQLite 的基本步骤包括：打开数据库、准备 SQL 语句、绑定参数、执行 SQL 语句、处理查询结果、清理资源。SQLite 提供了许多常用的函数和接口，可以帮助我们更好地使用和管理数据库。SQLite 数据库文件是一种特殊的二进制文件，需要放置在沙盒的可访问目录中。SQLite 还提供了许多高级的特性，可以满足更复杂的数据库操作和管理需求。
+
+# FMDB
+
+#### 1.简介
+
+* FMDB是iOS平台的SQLite数据库框架
+* FMDB以OC的方式封装了SQLite的C语言API
+
+优点：
+
+* 使用起来更加面向对象，省去了很多麻烦、冗余的C语言代码
+* 对比苹果自带的Core Data框架，更加轻量级和灵活
+* 提供了多线程安全的数据库操作方法，有效地防止数据混乱
+
+FMDB有三个主要的类
+
+* FMDatabase :其对象就代表一个单独的SQLite数据库，用来执行SQL语句
+* FMResultSet ：用来执行查询后的结果集
+* FMDatabaseQueue ：用于在多线程中执行多个查询或更新，它是线程安全的
+
+通过指定SQLite数据库文件路径来创建FMDatabase对象
+
+文件路径有三种情况
+
+* 具体文件路径 ：如果不存在会自动创建
+* 空字符串@"" ：会在临时目录创建一个空的数据库，当FMDatabase连接关闭时，数据库文件也被删除
+* nil ：会创建一个内存中临时数据库，当FMDatabase连接关闭时，数据库会被销毁
+
+#### 2.FMDB安装
+
+可以通过 CocoaPods 来安装 FMDB：
+
+```ruby
+pod 'FMDB'
+```
+
+或者手动添加 FMDB 源代码到项目中。
+
+#### 3.基本使用
+
+##### 3.1 创建和打开数据库
+
+首先需要在项目中创建或打开一个 SQLite 数据库：
+
+```objc
+#import <FMDB/FMDB.h>
+
+// 获取数据库文件路径
+NSString *docsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+NSString *dbPath = [docsPath stringByAppendingPathComponent:@"example.db"];
+
+// 创建数据库实例
+FMDatabase *database = [FMDatabase databaseWithPath:dbPath];
+
+// 打开数据库
+if (![database open]) {
+    NSLog(@"Could not open database");
+    return;
+}
+```
+
+##### 3.2 创建表
+
+创建表的 SQL 语句和执行方法：
+
+```objc
+NSString *createTableSQL = @"CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)";
+if (![database executeUpdate:createTableSQL]) {
+    NSLog(@"Failed to create table: %@", [database lastErrorMessage]);
+}
+```
+
+##### 3.3 插入数据
+
+插入数据到表格中：
+
+```objc
+NSString *insertSQL = @"INSERT INTO Users (name, age) VALUES (?, ?)";
+if (![database executeUpdate:insertSQL, @"Alice", @(30)]) {
+    NSLog(@"Failed to insert data: %@", [database lastErrorMessage]);
+}
+```
+
+##### 3.4 查询数据
+
+查询表格中的数据：
+
+```objc
+NSString *querySQL = @"SELECT * FROM Users";
+FMResultSet *results = [database executeQuery:querySQL];
+
+while ([results next]) {
+    NSString *name = [results stringForColumn:@"name"];
+    int age = [results intForColumn:@"age"];
+    NSLog(@"User: %@, Age: %d", name, age);
+}
+```
+
+##### 3.5 更新数据
+
+更新表格中的数据：
+
+```objc
+NSString *updateSQL = @"UPDATE Users SET age = ? WHERE name = ?";
+if (![database executeUpdate:updateSQL, @(31), @"Alice"]) {
+    NSLog(@"Failed to update data: %@", [database lastErrorMessage]);
+}
+```
+
+##### 3.6 删除数据
+
+从表格中删除数据：
+
+```objc
+NSString *deleteSQL = @"DELETE FROM Users WHERE name = ?";
+if (![database executeUpdate:deleteSQL, @"Alice"]) {
+    NSLog(@"Failed to delete data: %@", [database lastErrorMessage]);
+}
+```
+
+##### 3.7 关闭数据库
+
+完成所有操作后关闭数据库：
+
+```objc
+[database close];
+```
+
+#### 4. 线程安全
+
+FMDB 提供了多种线程安全的操作方式，最常用的是 `FMDatabaseQueue`：
+
+```objc
+FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+
+[queue inDatabase:^(FMDatabase *db) {
+    [db executeUpdate:@"INSERT INTO Users (name, age) VALUES (?, ?)", @"Bob", @(25)];
+}];
+
+[queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+    [db executeUpdate:@"INSERT INTO Users (name, age) VALUES (?, ?)", @"Carol", @(28)];
+    [db executeUpdate:@"INSERT INTO Users (name, age) VALUES (?, ?)", @"Dave", @(35)];
+}];
+```
+
+#### 5. 错误处理
+
+在操作数据库时，检查是否有错误发生：
+
+```objc
+if (![database executeUpdate:someSQL]) {
+    NSLog(@"Error: %@", [database lastErrorMessage]);
+}
+```
+
+#### 6. 性能优化
+
+- 使用事务（`beginTransaction` 和 `commit`）来包裹多条语句，提高执行速度。
+- 避免在主线程进行大量数据库操作，使用 `FMDatabaseQueue` 在后台线程执行。
